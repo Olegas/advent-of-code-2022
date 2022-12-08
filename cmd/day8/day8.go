@@ -15,10 +15,10 @@ func isOuter(x, y, width, height int) bool {
 	return x == 0 || y == 0 || x == width-1 || y == height-1
 }
 
-func walk(mat *[][]int, visMap *map[string]bool, x, y, dx, dy, prevAcuuH int) {
+func walk(mat *[][]uint8, visMap *map[string]bool, x, y, dx, dy, prevAcuuH int) {
 	height := len(*mat)
 	width := len((*mat)[0])
-	h := (*mat)[y][x]
+	h := int((*mat)[y][x])
 	vis := h > prevAcuuH || isOuter(x, y, width, height)
 	if vis {
 		(*visMap)[toKey(x, y)] = true
@@ -28,7 +28,7 @@ func walk(mat *[][]int, visMap *map[string]bool, x, y, dx, dy, prevAcuuH int) {
 	}
 }
 
-func walkScore(mat *[][]int, cx, cy, dx, dy int) int {
+func walkScore(mat *[][]uint8, cx, cy, dx, dy int) int {
 	height := len(*mat)
 	width := len((*mat)[0])
 	ptH := (*mat)[cy][cx]
@@ -49,7 +49,7 @@ func walkScore(mat *[][]int, cx, cy, dx, dy int) int {
 	return score
 }
 
-func scoreForPoint(mat *[][]int, x, y int) int {
+func scoreForPoint(mat *[][]uint8, x, y int) int {
 	score := walkScore(mat, x, y, 1, 0)
 	score *= walkScore(mat, x, y, 0, 1)
 	score *= walkScore(mat, x, y, -1, 0)

@@ -1,9 +1,5 @@
-github.com/Olegas/goaocd v1.0.0 h1:BWg8VBPRIHOkxzeSkgB+ZY3GtSeZ9G3O2T1CKh9Y1B0=
-github.com/Olegas/goaocd v1.0.0/go.mod h1:n8BZuvSl2dDVS+PdYYzBCRgWH5lRg/7A1mhHEVKQ0m8=
-github.com/Olegas/goaocd v1.1.0 h1:iA+aD6hRp001j3KVK0dzIxOWJ34GqL0w377lB3tG9WE=
-github.com/Olegas/goaocd v1.1.0/go.mod h1:n8BZuvSl2dDVS+PdYYzBCRgWH5lRg/7A1mhHEVKQ0m8=
-github.com/Olegas/goaocd v1.2.0 h1:LKxpdFmnu6qG+J+utFgEZaod+sKRJ0c+qmk9e+s0Oso=
-github.com/Olegas/goaocd v1.2.0/go.mod h1:n8BZuvSl2dDVS+PdYYzBCRgWH5lRg/7A1mhHEVKQ0m8=
+github.com/Olegas/goaocd v1.3.0 h1:GddWa9CV18ac9qBR5xV+7cwoAGLOsMwpGu+eAM6vRCA=
+github.com/Olegas/goaocd v1.3.0/go.mod h1:n8BZuvSl2dDVS+PdYYzBCRgWH5lRg/7A1mhHEVKQ0m8=
 github.com/deckarep/golang-set v1.8.0 h1:sk9/l/KqpunDwP7pSjUg0keiOOLEnOBHzykLrsPppp4=
 github.com/deckarep/golang-set v1.8.0/go.mod h1:5nI87KwE7wgsBU1F4GKAw2Qod7p5kyS383rP6+o6qqo=
 github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
