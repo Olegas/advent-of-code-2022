@@ -57,8 +57,10 @@ func scoreForPoint(mat *[][]uint8, x, y int) int {
 	return score
 }
 
-func main() {
-	width, height, mat := goaocd.DigitMatrix()
+func partA(mat *[][]uint8, width, height int) int {
+	done := goaocd.Duration("Part A")
+	defer done()
+
 	visMap := make(map[string]bool)
 	for y := 0; y < height; y++ {
 		var start = []int{0, width - 1}
@@ -80,7 +82,12 @@ func main() {
 			walk(mat, &visMap, x, y, 0, dy, -1)
 		}
 	}
-	fmt.Printf("Part A: %d\n", len(visMap))
+	return len(visMap)
+}
+
+func partB(mat *[][]uint8, width, height int) int {
+	done := goaocd.Duration("Part B")
+	defer done()
 
 	maxScore := 0
 	for y := 1; y < height-1; y++ {
@@ -91,5 +98,11 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("Part B: %d\n", maxScore)
+	return maxScore
+}
+
+func main() {
+	width, height, mat := goaocd.DigitMatrix()
+	fmt.Printf("Part A: %d\n", partA(mat, width, height))
+	fmt.Printf("Part B: %d\n", partB(mat, width, height))
 }
