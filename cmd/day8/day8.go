@@ -58,21 +58,8 @@ func scoreForPoint(mat *[][]int, x, y int) int {
 }
 
 func main() {
-	lines := goaocd.Lines()
-	width := len(lines[0])
-	height := len(lines)
-	mat := make([][]int, height)
+	width, height, mat := goaocd.DigitMatrix()
 	visMap := make(map[string]bool)
-	for i := 0; i < height; i++ {
-		mat[i] = make([]int, width)
-	}
-	for y, line := range lines {
-		for x, s := range line {
-			i := int(s) - '0'
-			mat[y][x] = i
-		}
-	}
-
 	for y := 0; y < height; y++ {
 		var start = []int{0, width - 1}
 		for _, x := range start {
@@ -80,7 +67,7 @@ func main() {
 			if x == width-1 {
 				dx = -1
 			}
-			walk(&mat, &visMap, x, y, dx, 0, -1)
+			walk(mat, &visMap, x, y, dx, 0, -1)
 		}
 	}
 	for x := 0; x < width; x++ {
@@ -90,7 +77,7 @@ func main() {
 			if y == height-1 {
 				dy = -1
 			}
-			walk(&mat, &visMap, x, y, 0, dy, -1)
+			walk(mat, &visMap, x, y, 0, dy, -1)
 		}
 	}
 	fmt.Printf("Part A: %d\n", len(visMap))
@@ -98,7 +85,7 @@ func main() {
 	maxScore := 0
 	for y := 1; y < height-1; y++ {
 		for x := 1; x < width-1; x++ {
-			score := scoreForPoint(&mat, x, y)
+			score := scoreForPoint(mat, x, y)
 			if score > maxScore {
 				maxScore = score
 			}
