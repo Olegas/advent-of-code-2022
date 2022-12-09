@@ -39,6 +39,8 @@ func (r *Rope) Tail() *Knot {
 
 func (r *Rope) Adjust() {
 	for k := r.Head; k != nil; k = k.Next {
-		k.AdjustNext()
+		if k.AdjustNext() {
+			break
+		}
 	}
 }

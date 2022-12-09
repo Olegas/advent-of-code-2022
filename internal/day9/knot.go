@@ -17,18 +17,20 @@ func (k *Knot) nextIsNear() bool {
 	return xDiff <= 1 && yDiff <= 1
 }
 
-func (k *Knot) AdjustNext() {
-	if !k.nextIsNear() {
-		next := k.Next
-		if k.Pos.Y > next.Pos.Y {
-			defer next.Pos.Down()
-		} else if k.Pos.Y < next.Pos.Y {
-			defer next.Pos.Up()
-		}
-		if k.Pos.X > next.Pos.X {
-			defer next.Pos.Right()
-		} else if k.Pos.X < next.Pos.X {
-			defer next.Pos.Left()
-		}
+func (k *Knot) AdjustNext() bool {
+	if k.nextIsNear() {
+		return true
 	}
+	next := k.Next
+	if k.Pos.Y > next.Pos.Y {
+		defer next.Pos.Down()
+	} else if k.Pos.Y < next.Pos.Y {
+		defer next.Pos.Up()
+	}
+	if k.Pos.X > next.Pos.X {
+		defer next.Pos.Right()
+	} else if k.Pos.X < next.Pos.X {
+		defer next.Pos.Left()
+	}
+	return false
 }
