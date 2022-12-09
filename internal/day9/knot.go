@@ -23,14 +23,14 @@ func (k *Knot) AdjustNext() bool {
 	}
 	next := k.Next
 	if k.Pos.Y > next.Pos.Y {
-		defer next.Pos.Down()
+		next.Pos.Down()
 	} else if k.Pos.Y < next.Pos.Y {
-		defer next.Pos.Up()
+		next.Pos.Up()
 	}
 	if k.Pos.X > next.Pos.X {
-		defer next.Pos.Right()
+		next.Pos.Right()
 	} else if k.Pos.X < next.Pos.X {
-		defer next.Pos.Left()
+		next.Pos.Left()
 	}
 	return false
 }
