@@ -25,5 +25,5 @@ func (c *CRT) Draw(spritePos int) {
 	if spritePos-1 <= pos && pos <= spritePos+1 {
 		char = "#"
 	}
-	c.line = fmt.Sprintf("%s%s", c.line, char)
+	c.line += char
 }
