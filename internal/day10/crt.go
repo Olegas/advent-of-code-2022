@@ -21,7 +21,7 @@ func (c *CRT) Inc() {
 
 func (c *CRT) Draw(spritePos int) {
 	pos := c.pos()
-	char := "."
+	char := " "
 	if spritePos-1 <= pos && pos <= spritePos+1 {
 		char = "#"
 	}
