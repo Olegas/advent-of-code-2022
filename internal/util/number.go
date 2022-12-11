@@ -1,5 +1,7 @@
 package util
 
+import "strconv"
+
 func Max(a, b int) int {
 	if a > b {
 		return a
@@ -26,4 +28,12 @@ func MinMax(array []int) (int, int) {
 		}
 	}
 	return min, max
+}
+
+func Atoi(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return i
 }

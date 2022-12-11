@@ -4,28 +4,27 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"strconv"
 	"strings"
 
+	"github.com/Olegas/advent-of-code-2022/internal/util"
 	"github.com/Olegas/goaocd"
 )
 
 type Monkey struct {
-	items           []int64
+	items           []int
 	op              string
-	arg             int64
-	divisor         int64
+	arg             int
+	divisor         int
 	trueTo          int
 	falseTo         int
 	madeInspections int
 }
 
 type PassTo struct {
-	wl int64
-	to int
+	wl, to int
 }
 
-var supermodulo int64
+var supermodulo int
 
 func (m *Monkey) Turn(breakThings bool) chan *PassTo {
 	c := make(chan *PassTo)
@@ -34,7 +33,7 @@ func (m *Monkey) Turn(breakThings bool) chan *PassTo {
 		for ok := len(m.items) > 0; ok; ok = len(m.items) > 0 {
 			item := m.items[0]
 			m.items = m.items[1:]
-			var wl int64
+			var wl int
 			if breakThings {
 				wl = m.inspect(item) % supermodulo
 			} else {
@@ -52,8 +51,8 @@ func (m *Monkey) Turn(breakThings bool) chan *PassTo {
 	return c
 }
 
-func (m *Monkey) inspect(item int64) int64 {
-	var worryLevel int64 = item
+func (m *Monkey) inspect(item int) int {
+	var worryLevel int = item
 	switch m.op {
 	case "+":
 		worryLevel += m.arg
@@ -69,12 +68,12 @@ func (m *Monkey) inspect(item int64) int64 {
 	return worryLevel
 }
 
-func (m *Monkey) getBored(wl int64) int64 {
+func (m *Monkey) getBored(wl int) int {
 	fWorryLevel := float32(wl) / 3.0
-	return int64(math.Floor(float64(fWorryLevel)))
+	return int(math.Floor(float64(fWorryLevel)))
 }
 
-func (m *Monkey) test(wl int64) bool {
+func (m *Monkey) test(wl int) bool {
 	return wl%m.divisor == 0
 }
 
@@ -174,13 +173,9 @@ func loadMonkeys() []*Monkey {
 			monkeys = append(monkeys, monkey)
 		case 1:
 			items := strings.Split(line[18:], ", ")
-			monkey.items = make([]int64, len(items))
+			monkey.items = make([]int, len(items))
 			for i, v := range items {
-				iv, err := strconv.ParseInt(v, 10, 64)
-				if err != nil {
-					panic(err)
-				}
-				monkey.items[i] = iv
+				monkey.items[i] = util.Atoi(v)
 			}
 		case 2:
 			opConfig := strings.Split(line[23:], " ")
@@ -189,30 +184,14 @@ func loadMonkeys() []*Monkey {
 				monkey.arg = 2
 			} else {
 				monkey.op = opConfig[0]
-				i, err := strconv.ParseInt(opConfig[1], 10, 64)
-				if err != nil {
-					panic(err)
-				}
-				monkey.arg = i
+				monkey.arg = util.Atoi(opConfig[1])
 			}
 		case 3:
-			i, err := strconv.ParseInt(line[21:], 10, 64)
-			if err != nil {
-				panic(err)
-			}
-			monkey.divisor = i
+			monkey.divisor = util.Atoi(line[21:])
 		case 4:
-			i, err := strconv.Atoi(line[29:])
-			if err != nil {
-				panic(err)
-			}
-			monkey.trueTo = i
+			monkey.trueTo = util.Atoi(line[29:])
 		case 5:
-			i, err := strconv.Atoi(line[30:])
-			if err != nil {
-				panic(err)
-			}
-			monkey.falseTo = i
+			monkey.falseTo = util.Atoi(line[30:])
 		}
 	}
 	return monkeys
