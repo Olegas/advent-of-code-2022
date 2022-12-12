@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/Olegas/goaocd v1.4.0
+	github.com/Olegas/goaocd v1.6.0
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	golang.org/x/sys v0.3.0 // indirect

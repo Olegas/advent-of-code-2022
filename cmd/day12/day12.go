@@ -3,21 +3,15 @@ package main
 import (
 	"container/heap"
 	"fmt"
-	"os"
-	"strings"
-	"time"
 
-	"github.com/Olegas/advent-of-code-2022/internal/util"
+	"github.com/Olegas/advent-of-code-2022/internal/day12"
 	"github.com/Olegas/goaocd"
-	"github.com/fatih/color"
 )
-
-var vis bool
 
 // An Item is something we manage in a priority queue.
 type Item struct {
-	value    Pos // The value of the item; arbitrary.
-	priority int // The priority of the item in the queue.
+	value    goaocd.Pos // The value of the item; arbitrary.
+	priority int        // The priority of the item in the queue.
 	// The index is needed by update and is maintained by the heap.Interface methods.
 	index int // The index of the item in the heap.
 }
@@ -28,7 +22,6 @@ type PriorityQueue []*Item
 func (pq PriorityQueue) Len() int { return len(pq) }
 
 func (pq PriorityQueue) Less(i, j int) bool {
-	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
 	return pq[i].priority < pq[j].priority
 }
 
@@ -55,42 +48,6 @@ func (pq *PriorityQueue) Pop() any {
 	return item
 }
 
-type Pos struct {
-	X, Y int
-}
-
-func (p *Pos) mut(m Pos) Pos {
-	return Pos{p.X + m.X, p.Y + m.Y}
-}
-
-func (p *Pos) eq(m Pos) bool {
-	return p.X == m.X && p.Y == m.Y
-}
-
-func (p *Pos) dist(to Pos) int {
-	return util.AbsDiffInt(p.X, to.X) + util.AbsDiffInt(p.Y, to.Y)
-}
-
-func CharMatrix(lines []string, lookup map[string]bool) (int, int, *[][]string, *map[string]Pos) {
-	height := len(lines)
-	width := len(lines[0])
-	res := make([][]string, height)
-	resolve := make(map[string]Pos)
-	for y := 0; y < height; y++ {
-		res[y] = make([]string, width)
-	}
-	for y, line := range lines {
-		for x, s := range line {
-			s := string(s)
-			res[y][x] = s
-			if ok := lookup[s]; ok {
-				resolve[s] = Pos{x, y}
-			}
-		}
-	}
-	return width, height, &res, &resolve
-}
-
 func canStep(from, to string, up bool) bool {
 	if to == "E" {
 		to = "z"
@@ -110,12 +67,12 @@ func canStep(from, to string, up bool) bool {
 
 }
 
-func candidates(mat *[][]string, visited *map[Pos]bool, from Pos, width, height int, up bool) *[]Pos {
-	res := make([]Pos, 0, 4)
+func candidates(mat *[][]string, visited *map[goaocd.Pos]bool, from goaocd.Pos, width, height int, up bool) *[]goaocd.Pos {
+	res := make([]goaocd.Pos, 0, 4)
 	curH := (*mat)[from.Y][from.X]
-	steps := []Pos{{1, 0}, {0, 1}, {-1, 0}, {0, -1}}
+	steps := []goaocd.Pos{{X: 1, Y: 0}, {X: 0, Y: 1}, {X: -1, Y: 0}, {X: 0, Y: -1}}
 	for _, step := range steps {
-		next := from.mut(step)
+		next := from.Mut(step)
 		if 0 <= next.X && next.X < width && 0 <= next.Y && next.Y < height {
 			candidateH := (*mat)[next.Y][next.X]
 			wasHere := (*visited)[next]
@@ -127,47 +84,7 @@ func candidates(mat *[][]string, visited *map[Pos]bool, from Pos, width, height 
 	return &res
 }
 
-func sample() []string {
-	d := `Sabqponm
-abcryxxl
-accszExk
-acctuvwj
-abdefghi`
-	return strings.Split(d, "\n")
-}
-
-var visitedPlace = color.New(color.FgWhite, color.Bold).SprintFunc()
-var normalPlace = color.New(color.FgCyan).SprintFunc()
-
-func visualize(mat *[][]string, visited *map[Pos]bool, edgePositions *map[string]Pos) {
-	if !vis {
-		return
-	}
-	util.ClearTerm()
-	for y, line := range *mat {
-		lineStr := ""
-		for x, s := range line {
-			pos := Pos{x, y}
-			var char string
-			if pos.eq((*edgePositions)["S"]) {
-				char = "S"
-			} else if pos.eq((*edgePositions)["E"]) {
-				char = "E"
-			} else {
-				char = s
-			}
-			if (*visited)[pos] {
-				lineStr += visitedPlace(char)
-			} else {
-				lineStr += normalPlace(char)
-			}
-		}
-		fmt.Printf("%s\n", lineStr)
-	}
-	time.Sleep(25 * time.Millisecond)
-}
-
-func partA(mat *[][]string, edgePositions *map[string]Pos, width, height int) int {
+func partA(mat *[][]string, edgePositions *map[string]goaocd.Pos, width, height int) int {
 	done := goaocd.Duration("Part A")
 	done()
 
@@ -176,11 +93,11 @@ func partA(mat *[][]string, edgePositions *map[string]Pos, width, height int) in
 	start := (*edgePositions)["S"]
 	end := (*edgePositions)["E"]
 	heap.Push(&pq, &Item{value: start, priority: 0})
-	visited := make(map[Pos]bool)
+	visited := make(map[goaocd.Pos]bool)
 
 	for {
 		next := heap.Pop(&pq).(*Item)
-		if next.value.eq(end) {
+		if next.value.Eq(end) {
 			return next.priority
 		}
 		c := candidates(mat, &visited, next.value, width, height, true)
@@ -191,11 +108,11 @@ func partA(mat *[][]string, edgePositions *map[string]Pos, width, height int) in
 			visited[i] = true
 			heap.Push(&pq, &Item{value: i, priority: next.priority + 1})
 		}
-		visualize(mat, &visited, edgePositions)
+		day12.Visualize(mat, &visited, edgePositions)
 	}
 }
 
-func partB(mat *[][]string, edgePositions *map[string]Pos, width, height int) int {
+func partB(mat *[][]string, edgePositions *map[string]goaocd.Pos, width, height int) int {
 	done := goaocd.Duration("Part B")
 	done()
 
@@ -204,7 +121,7 @@ func partB(mat *[][]string, edgePositions *map[string]Pos, width, height int) in
 	start := (*edgePositions)["E"]
 
 	heap.Push(&pq, &Item{value: start, priority: 0})
-	visited := make(map[Pos]bool)
+	visited := make(map[goaocd.Pos]bool)
 
 	for {
 		next := heap.Pop(&pq).(*Item)
@@ -221,17 +138,13 @@ func partB(mat *[][]string, edgePositions *map[string]Pos, width, height int) in
 			visited[i] = true
 			heap.Push(&pq, &Item{value: i, priority: next.priority + 1})
 		}
-		visualize(mat, &visited, edgePositions)
+		day12.Visualize(mat, &visited, edgePositions)
 	}
 }
 
 func main() {
-	vis = os.Getenv("VIS") != ""
-	// lines := sample()
-	lines := goaocd.Lines()
 	searchFor := map[string]bool{"S": true, "E": true}
-
-	width, height, mat, edgePositions := CharMatrix(lines, searchFor)
+	width, height, mat, edgePositions := goaocd.CharMatrix(&searchFor)
 	fmt.Printf("Part A: %d\n", partA(mat, edgePositions, width, height))
 	fmt.Printf("Part B: %d\n", partB(mat, edgePositions, width, height))
 }
