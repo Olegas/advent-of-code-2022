@@ -93,41 +93,17 @@ func parse(r *strings.Reader, current *[]any) {
 	}
 }
 
-func printInner(packet []any) {
-	for idx, i := range packet {
-		if idx != 0 {
-			fmt.Print(",")
-		}
-		switch i := i.(type) {
-		case int:
-			fmt.Printf("%d", i)
-		case []interface{}:
-			fmt.Printf("[")
-			printInner(i)
-			fmt.Printf("]")
-		}
+func partA(lines []string, packets *[][]any) int {
+	done := goaocd.Duration("Part A")
+	defer done()
 
-	}
-}
-
-func print(packets [][]any) {
-	for _, p := range packets {
-		fmt.Print("[")
-		printInner(p)
-		fmt.Print("]\n")
-	}
-}
-
-func main() {
-	data := goaocd.Lines()
-	lines := append(data, "\n")
-	var pair = make([][]any, 2)
 	var accu = 0
 	var pairNum = 1
-	packets := make([][]any, 0)
+	var pair = make([][]any, 2)
+
 	for idx, line := range lines {
 		if idx%3 == 2 {
-			// lastLint
+			// last line
 			if Compare(pair[0], pair[1]) == 1 {
 				accu += pairNum
 			}
@@ -140,10 +116,15 @@ func main() {
 			r.Seek(1, io.SeekStart)
 			parse(r, &newItem)
 			pair[idx%3] = newItem
-			packets = append(packets, newItem)
+			*packets = append(*packets, newItem)
 		}
 	}
-	fmt.Printf("Part A: %d\n", accu)
+	return accu
+}
+
+func partB(packets *[][]any) int {
+	done := goaocd.Duration("Part B")
+	defer done()
 
 	// Some typing shit ( Shame on me
 	pkt1 := make([]any, 1)
@@ -154,18 +135,18 @@ func main() {
 	i = make([]any, 1)
 	i[0] = 6
 	pkt2[0] = i
-	packets = append(packets, nil, nil)
-	packets[len(packets)-2] = pkt1
-	packets[len(packets)-1] = pkt2
+	*packets = append(*packets, nil, nil)
+	(*packets)[len(*packets)-2] = pkt1
+	(*packets)[len(*packets)-1] = pkt2
 
-	sort.SliceStable(packets, func(i, j int) bool {
-		a := packets[i]
-		b := packets[j]
+	sort.SliceStable(*packets, func(i, j int) bool {
+		a := (*packets)[i]
+		b := (*packets)[j]
 		return Compare(a, b) == 1
 	})
 
-	accu = 1
-	for idx, p := range packets {
+	var accu = 1
+	for idx, p := range *packets {
 		if len(p) == 1 {
 			i := p[0]
 			switch i := i.(type) {
@@ -179,7 +160,15 @@ func main() {
 			}
 		}
 	}
-	// print(packets)
 
-	fmt.Printf("Part B: %d\n", accu)
+	return accu
+}
+
+func main() {
+	data := goaocd.Lines()
+	lines := append(data, "\n")
+
+	packets := make([][]any, 0)
+	fmt.Printf("Part A: %d\n", partA(lines, &packets))
+	fmt.Printf("Part B: %d\n", partB(&packets))
 }
