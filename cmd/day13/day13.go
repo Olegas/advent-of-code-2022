@@ -20,13 +20,13 @@ func Compare(l, r []any) int {
 		}
 
 		j := r[idx]
-		switch i.(type) {
+		switch i := i.(type) {
 		case int:
 			switch j := j.(type) {
 			case int:
-				if i.(int) < j {
+				if i < j {
 					return 1
-				} else if i.(int) > j {
+				} else if i > j {
 					return 0
 				}
 			case []interface{}:
@@ -38,16 +38,16 @@ func Compare(l, r []any) int {
 				}
 			}
 		case []interface{}:
-			switch j.(type) {
+			switch j := j.(type) {
 			case int:
 				cmp := make([]any, 1)
 				cmp[0] = j
-				res := Compare(i.([]any), cmp)
+				res := Compare(i, cmp)
 				if res > -1 {
 					return res
 				}
 			case []interface{}:
-				res := Compare(i.([]any), j.([]any))
+				res := Compare(i, j)
 				if res > -1 {
 					return res
 				}
