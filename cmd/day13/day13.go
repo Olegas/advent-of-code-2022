@@ -62,7 +62,7 @@ func Compare(l, r []any) int {
 	return 0
 }
 
-func parse(r *strings.Reader, current *[]any) {
+func parse(r *strings.Reader, current *[]any) []any {
 	for {
 		b, err := r.ReadByte()
 		if err != nil {
@@ -84,8 +84,13 @@ func parse(r *strings.Reader, current *[]any) {
 				}
 			}
 		} else if b == ']' {
-			return
+			return *current
 		} else if b == '[' {
+			if current == nil {
+				ret := make([]any, 0)
+				current = &ret
+				continue
+			}
 			newItem := make([]any, 0)
 			parse(r, &newItem)
 			*current = append(*current, newItem)
@@ -110,11 +115,7 @@ func partA(lines []string, packets *[][]any) int {
 			// next pair
 			pairNum++
 		} else {
-			newItem := make([]any, 0)
-			r := strings.NewReader(line)
-			// Skip first char
-			r.Seek(1, io.SeekStart)
-			parse(r, &newItem)
+			newItem := parse(strings.NewReader(line), nil)
 			pair[idx%3] = newItem
 			*packets = append(*packets, newItem)
 		}
