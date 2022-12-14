@@ -3,7 +3,7 @@ module github.com/Olegas/advent-of-code-2022
 go 1.19
 
 require (
-	github.com/Olegas/goaocd v1.7.0
+	github.com/Olegas/goaocd v1.8.0
 	github.com/deckarep/golang-set v1.8.0
 	github.com/fatih/color v1.13.0
 )

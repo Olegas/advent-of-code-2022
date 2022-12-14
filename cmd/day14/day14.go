@@ -8,13 +8,6 @@ import (
 	"github.com/Olegas/goaocd"
 )
 
-func NewPos(s string) goaocd.Pos {
-	coords := strings.Split(s, ",")
-	x := util.Atoi(coords[0])
-	y := util.Atoi(coords[1])
-	return goaocd.Pos{X: x, Y: y}
-}
-
 type Dimensions struct {
 	MinX, MaxX, MinY, MaxY int
 }
@@ -141,8 +134,8 @@ func loadCave(lines []string) (map[goaocd.Pos]string, Dimensions) {
 		steps := strings.Split(line, " -> ")
 		for idx, step := range steps {
 			if idx > 0 {
-				prev := NewPos(steps[idx-1])
-				curr := NewPos(step)
+				prev := goaocd.NewPos(steps[idx-1])
+				curr := goaocd.NewPos(step)
 
 				if prev.X == curr.X {
 					yMut := 1
