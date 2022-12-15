@@ -9,6 +9,13 @@ func Max(a, b int) int {
 	return b
 }
 
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func AbsDiffInt(x, y int) int {
 	if x < y {
 		return y - x
