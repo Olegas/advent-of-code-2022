@@ -134,28 +134,17 @@ func main() {
 	vis := make(map[goaocd.Pos]string)
 	pairs := make([]Pair, 0)
 	for _, line := range lines {
-		items := strings.Split(line, ": ")
-		sensor := items[0][10:]
-		var x, y int
-		n, err := fmt.Sscanf(sensor, "x=%d, y=%d", &x, &y)
+		var x1, y1, x2, y2 int
+		n, err := fmt.Sscanf(line, "Sensor at x=%d, y=%d: closest beacon is at x=%d, y=%d", &x1, &y1, &x2, &y2)
 		if err != nil {
 			panic(err)
 		}
-		if n != 2 {
-			panic(fmt.Sprintf("Failed to parse sensor position %s", sensor))
+		if n != 4 {
+			panic(fmt.Sprintf("Failed to parse sensor position %s", line))
 		}
-		sensorPos := goaocd.Pos{X: x, Y: y}
+		sensorPos := goaocd.Pos{X: x1, Y: y1}
 		vis[sensorPos] = "S"
-
-		beacon := items[1][21:]
-		n, err = fmt.Sscanf(beacon, "x=%d, y=%d", &x, &y)
-		if err != nil {
-			panic(err)
-		}
-		if n != 2 {
-			panic(fmt.Sprintf("Failed to parse sensor position %s", sensor))
-		}
-		beaconPos := goaocd.Pos{X: x, Y: y}
+		beaconPos := goaocd.Pos{X: x2, Y: y2}
 		vis[beaconPos] = "B"
 		pairs = append(pairs, Pair{sensor: sensorPos, beacon: beaconPos})
 	}
