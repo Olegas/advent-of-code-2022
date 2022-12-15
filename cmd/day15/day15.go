@@ -145,8 +145,8 @@ func main() {
 			panic(fmt.Sprintf("Failed to parse sensor position %s", sensor))
 		}
 		sensorPos := goaocd.Pos{X: x, Y: y}
-
 		vis[sensorPos] = "S"
+
 		beacon := items[1][21:]
 		n, err = fmt.Sscanf(beacon, "x=%d, y=%d", &x, &y)
 		if err != nil {
