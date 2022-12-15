@@ -69,7 +69,7 @@ func Clamp(a, b, to int) (int, int) {
 	return util.Max(0, a), util.Min(b, to)
 }
 
-func partB(vis map[goaocd.Pos]string, pairs []Pair, maxCoord int) int64 {
+func partB(pairs []Pair, maxCoord int) int64 {
 	done := goaocd.Duration("Part B")
 	defer done()
 
@@ -166,5 +166,5 @@ func main() {
 
 	// Sample: 20
 	// Actual: 4000000
-	fmt.Printf("Part A: %d\n", partB(vis, pairs, 4000000))
+	fmt.Printf("Part A: %d\n", partB(pairs, 4000000))
 }
