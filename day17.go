@@ -23,15 +23,20 @@ var figures = []Fig{
 	{points: []goaocd.Pos{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, h: 2, w: 2},
 }
 
+type State struct {
+	height  int
+	stopped int
+}
+
+type Key struct {
+	depth [7]int
+	fig   int
+	move  int
+}
+
 func sample() []string {
 	d := `>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>`
 	return strings.Split(d, "")
-}
-
-type Stack struct {
-	dumped       int64
-	highestPoint goaocd.Pos
-	w            int
 }
 
 func figCanMove(fig *Fig, move *goaocd.Pos, w int, screen *[]uint8) bool {
@@ -59,11 +64,28 @@ func drawFig(fig *Fig, screen *[]uint8) {
 	}
 }
 
-func simulate(maxStoppedRocks int) int64 {
-	s := Stack{w: 7}
+func calcDepthMap(screen *[]uint8, top int) [7]int {
+	res := [7]int{}
+	for i := 0; i < 7; i++ {
+		m := uint8(1 << i)
+		for j := top; j >= 0; j-- {
+			if (*screen)[j]&m != 0 {
+				res[i] = top - j
+				break
+			}
+		}
+	}
+	return res
+}
 
+func simulate(maxStoppedRocks int) int64 {
+	checkPatterns := true
+	highestPoint := 0
+	width := 7
+	heightInCycles := 0
 	moves := sample()
 	moves = strings.Split(strings.TrimRight(goaocd.Input(), "\n"), "")
+
 	movesPos := make([]goaocd.Pos, len(moves))
 	for idx, s := range moves {
 		p := goaocd.Pos{X: -1, Y: 0}
@@ -72,10 +94,13 @@ func simulate(maxStoppedRocks int) int64 {
 		}
 		movesPos[idx] = p
 	}
+
 	newFigOffset := goaocd.Pos{X: 2, Y: 4}
 	moveDown := goaocd.Pos{X: 0, Y: -1}
 	screen := make([]uint8, 1)
-	filledLineValue := (1 << s.w) - 1
+	seen := make(map[Key]State)
+
+	filledLineValue := (1 << width) - 1
 	screen[0] = uint8(filledLineValue)
 
 	figI := 0
@@ -83,16 +108,16 @@ func simulate(maxStoppedRocks int) int64 {
 	lenFig := len(figures)
 	lenMoves := len(movesPos)
 
-	stoppedCount := 0
+	stoppedCountLeft := maxStoppedRocks
 	for {
-		if stoppedCount == maxStoppedRocks {
+		if stoppedCountLeft == 0 {
 			break
 		}
 		fig := figures[figI]
 		figI = (figI + 1) % lenFig
 
 		fig.pos.X = newFigOffset.X
-		fig.pos.Y = s.highestPoint.Y + newFigOffset.Y
+		fig.pos.Y = int(highestPoint) + newFigOffset.Y
 
 		if len(screen) < fig.pos.Y+fig.h+1 {
 			newScreen := make([]uint8, (fig.pos.Y+fig.h)*100000)
@@ -105,39 +130,42 @@ func simulate(maxStoppedRocks int) int64 {
 			moveI = (moveI + 1) % lenMoves
 
 			// move
-			if figCanMove(&fig, &move, s.w, &screen) {
+			if figCanMove(&fig, &move, width, &screen) {
 				fig.pos.X += move.X
 			}
 
 			// fall
-			if figCanMove(&fig, &moveDown, s.w, &screen) {
+			if figCanMove(&fig, &moveDown, width, &screen) {
 				fig.pos.Y--
 			} else {
 				drawFig(&fig, &screen)
 				figHigh := fig.pos.Y + fig.h - 1
-				s.highestPoint.Y = util.Max(s.highestPoint.Y, figHigh)
-				stoppedCount++
+				highestPoint = util.Max(highestPoint, figHigh)
+				stoppedCountLeft--
+				if checkPatterns {
+					depthMap := calcDepthMap(&screen, highestPoint)
+					key := Key{fig: figI, move: moveI, depth: depthMap}
+					prevS, ok := seen[key]
+					if ok {
+						diffHeight := highestPoint - prevS.height
+						cycleLength := prevS.stopped - stoppedCountLeft
 
-				// Detect filled lines to dump screen down
-				for i := 0; i < fig.h; i++ {
-					y := fig.pos.Y + i
-					if screen[y] == uint8(filledLineValue) {
-						screen = screen[y:]
-						s.highestPoint.Y -= y
-						s.dumped += int64(y)
-						break
+						countCylcesLeft := stoppedCountLeft / cycleLength
+						heightInCycles = diffHeight * countCylcesLeft
+
+						stoppedCountLeft = stoppedCountLeft % cycleLength
+						checkPatterns = false
+					} else {
+						state := State{height: highestPoint, stopped: stoppedCountLeft}
+						seen[key] = state
 					}
-				}
-
-				if stoppedCount%100000000 == 0 {
-					fmt.Printf("Stopped count %d (%d/%d)\n", stoppedCount, len(screen), cap(screen))
 				}
 				break
 			}
 		}
 	}
 
-	return s.dumped + int64(s.highestPoint.Y)
+	return int64(heightInCycles) + int64(highestPoint)
 }
 
 func partA() int64 {
