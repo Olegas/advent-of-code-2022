@@ -84,7 +84,7 @@ func simulate(maxStoppedRocks int) int64 {
 	width := 7
 	heightInCycles := 0
 	moves := sample()
-	moves = strings.Split(strings.TrimRight(goaocd.Input(), "\n"), "")
+	moves = goaocd.Chars()
 
 	movesPos := make([]goaocd.Pos, len(moves))
 	for idx, s := range moves {
