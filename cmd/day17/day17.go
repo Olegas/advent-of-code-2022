@@ -120,6 +120,7 @@ func simulate(maxStoppedRocks int) int64 {
 		fig.pos.Y = int(highestPoint) + newFigOffset.Y
 
 		if len(screen) < fig.pos.Y+fig.h+1 {
+			// Big size to reduce count of (re)allocations and reduce run time
 			newScreen := make([]uint8, (fig.pos.Y+fig.h)*100000)
 			copy(newScreen, screen)
 			screen = newScreen
