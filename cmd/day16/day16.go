@@ -1,7 +1,6 @@
 package main
 
-// NOT WORKING...
-// Correct solution for sample but incorrect for actual input
+// Part A only
 
 import (
 	"container/heap"
@@ -33,7 +32,7 @@ type PriorityQueue []*Item
 func (pq PriorityQueue) Len() int { return len(pq) }
 
 func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].pathLen > pq[j].pathLen
+	return pq[i].pathLen >= pq[j].pathLen
 }
 
 func (pq PriorityQueue) Swap(i, j int) {
@@ -85,12 +84,13 @@ func partA(graph *Graph, nonEmptyNodes *[]string) int {
 		current       string
 		seen          map[string]bool
 		path          string
+		left          []string
 	}
 
 	leftToVisit := func(visited map[string]bool) []string {
 		res := make([]string, 0, len(*nonEmptyNodes)-len(visited))
 		for _, n := range *nonEmptyNodes {
-			ok := visited[n]
+			_, ok := visited[n]
 			if !ok {
 				res = append(res, n)
 			}
@@ -106,7 +106,8 @@ func partA(graph *Graph, nonEmptyNodes *[]string) int {
 	}}
 
 	for {
-		newItemsAdded := false
+		nextCandidates := []i{}
+		fmt.Printf("Next iter. Num candidates: %d\n", len(candidates))
 		for j := 0; j < len(candidates); j++ {
 			c := candidates[j]
 			variants := leftToVisit(c.seen)
@@ -129,17 +130,22 @@ func partA(graph *Graph, nonEmptyNodes *[]string) int {
 						timeLeft:      timeLeftAfterGoAndOpen,
 						path:          c.path + "-" + n,
 						totalPressure: c.totalPressure + timeLeftAfterGoAndOpen*graph.nodes[n].rate,
+						left:          leftToVisit(newSeen),
 					}
-					candidates = append(candidates, ni)
+					if ni.path == "AA-PS-FX-JM-KZ-UX-DO" || ni.path == "AA-PS-FX-JM-KZ-DO-UX" {
+						fmt.Printf("%v\n", ni)
+					}
+					nextCandidates = append(nextCandidates, ni)
 					if ni.totalPressure > max {
 						max = ni.totalPressure
 					}
 				}
 			}
 		}
-		if !newItemsAdded {
+		if len(nextCandidates) == 0 {
 			break
 		}
+		candidates = nextCandidates
 	}
 
 	return max
@@ -154,7 +160,7 @@ func partB() int {
 
 func loadPuzzle() *Graph {
 	lines := sample()
-	// lines = goaocd.Lines()
+	lines = goaocd.Lines(16)
 	graph := Graph{nodes: make(map[string]Valve), links: map[string][]string{}}
 	re := regexp.MustCompile("[A-Z]{2,2}")
 	for _, line := range lines {
@@ -211,7 +217,7 @@ func path(graph *Graph, from, to string) int {
 func precacheDistances(graph *Graph, nonZeroNodes *[]string) {
 	for _, a := range *nonZeroNodes {
 		for _, b := range *nonZeroNodes {
-			if a == b || b == "AA" {
+			if a == b {
 				continue
 			}
 			leg := fmt.Sprintf("%s,%s", a, b)
@@ -219,9 +225,7 @@ func precacheDistances(graph *Graph, nonZeroNodes *[]string) {
 			if ok {
 				continue
 			}
-			d := path(graph, a, b)
-			distances[leg] = d
-			distances[leg] = d
+			distances[leg] = path(graph, a, b)
 		}
 	}
 }
