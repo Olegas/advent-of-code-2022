@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/Olegas/advent-of-code-2022/internal/util"
 	"strings"
+
+	"github.com/Olegas/advent-of-code-2022/internal/util"
+	"github.com/fatih/color"
 
 	"github.com/Olegas/goaocd"
 )
@@ -40,7 +42,7 @@ func NewMoveMap() []Move {
 
 var around = []goaocd.Pos{
 	{-1, -1}, {0, -1}, {1, -1},
-	{-1, 0} /*            */, {1, 0},
+	{-1, 0}, {1, 0},
 	{-1, 1}, {0, 1}, {1, 1},
 }
 
@@ -56,17 +58,15 @@ func NewElve(at goaocd.Pos) Elve {
 }
 
 func (e *Elve) commit() {
-	e.pos = *e.proposedMove
+	e.pos = goaocd.Pos{X: e.proposedMove.X, Y: e.proposedMove.Y}
+}
+
+func (e *Elve) prepareToNextRound() {
 	e.proposedMove = nil
 	e.moveIdx = (e.moveIdx + 1) % len(e.moveMap)
 }
 
-func (e *Elve) rollback() {
-	e.proposedMove = nil
-	e.moveIdx = (e.moveIdx + 1) % len(e.moveMap)
-}
-
-func (e *Elve) proposeMove(world *map[goaocd.Pos]Elve) *goaocd.Pos {
+func (e *Elve) proposeMove(world *map[goaocd.Pos]*Elve) *goaocd.Pos {
 	nM := len(e.moveMap)
 	for i := 0; i < nM; i++ {
 		j := (e.moveIdx + i) % nM
@@ -89,7 +89,7 @@ func (e *Elve) proposeMove(world *map[goaocd.Pos]Elve) *goaocd.Pos {
 	return nil
 }
 
-func (e *Elve) needToMove(world *map[goaocd.Pos]Elve) bool {
+func (e *Elve) needToMove(world *map[goaocd.Pos]*Elve) bool {
 	for _, p := range around {
 		n := e.pos.Mut(p)
 		_, occupied := (*world)[n]
@@ -101,16 +101,17 @@ func (e *Elve) needToMove(world *map[goaocd.Pos]Elve) bool {
 }
 
 func sample() []string {
-	d := `.....
-..##.
-..#..
-.....
-..##.
-.....`
+	d := `....#..
+..###.#
+#...#.#
+.#...##
+#.###..
+##.#.##
+.#..#..`
 	return strings.Split(d, "\n")
 }
 
-func display(world *map[goaocd.Pos]Elve) {
+func display(world *map[goaocd.Pos]*Elve) {
 	dim := dimensions(world)
 	padding := 2
 
@@ -128,36 +129,65 @@ func display(world *map[goaocd.Pos]Elve) {
 	}
 }
 
-func simulate(world *map[goaocd.Pos]Elve, rounds int) {
-	nextWorld := make(map[goaocd.Pos][]Elve)
+var nextPlace = color.New(color.FgWhite, color.Bold).PrintFunc()
 
-	for i := 0; i < rounds; i++ {
-		display(world)
-		fmt.Scanln()
-		// someOneNeedToMove := false
+func display2(world *map[goaocd.Pos]*Elve, world2 *map[goaocd.Pos][]*Elve) {
+	dim := dimensions(world)
+	padding := 2
+
+	for y := dim.MinY - padding; y <= dim.MaxY+padding; y++ {
+		for x := dim.MinX - padding; x <= dim.MaxX+padding; x++ {
+			k := goaocd.Pos{X: x, Y: y}
+			_, occupied := (*world)[k]
+			s := "#"
+			if !occupied {
+				s = "."
+			}
+
+			l, occupied := (*world2)[k]
+			if occupied {
+				nextPlace(fmt.Sprintf("%d", len(l)))
+			} else {
+				fmt.Print(s)
+			}
+		}
+		fmt.Print("\n")
+	}
+}
+
+func simulate(world *map[goaocd.Pos]*Elve, maxRounds *int) int {
+	i := 0
+	for {
+		nextWorld := make(map[goaocd.Pos][]*Elve)
+		//display(world)
+		//fmt.Scanln()
+
+		someOneNeedToMove := false
 		for _, e := range *world {
 			if e.needToMove(world) {
-				// someOneNeedToMove = true
+				someOneNeedToMove = true
 				np := e.proposeMove(world)
 				if np != nil {
 					anp, present := nextWorld[*np]
 					if !present {
-						anp = make([]Elve, 0)
+						anp = make([]*Elve, 0)
 					}
 					nextWorld[*np] = append(anp, e)
 				}
 			}
 		}
 
+		//display2(world, &nextWorld)
+		//fmt.Scanln()
+
 		for _, es := range nextWorld {
-			if len(es) > 1 {
-				// those elves do not move
-				for _, e := range es {
-					e.rollback()
-				}
-			} else {
+			if len(es) == 1 {
 				e := es[0]
 				// remove Elve from old position
+				_, present := (*world)[e.pos]
+				if !present {
+					panic("Not present")
+				}
 				delete(*world, e.pos)
 				// move
 				e.commit()
@@ -165,6 +195,20 @@ func simulate(world *map[goaocd.Pos]Elve, rounds int) {
 			}
 		}
 
+		for p := range *world {
+			k := (*world)[p]
+			k.prepareToNextRound()
+		}
+
+		i++
+
+		if (maxRounds == nil && !someOneNeedToMove) || (maxRounds != nil && *maxRounds == i) {
+			// display(world)
+			return i
+		}
+
+		//display(world)
+		//fmt.Scanln()
 	}
 }
 
@@ -172,7 +216,7 @@ type Dimensions struct {
 	MinX, MaxX, MinY, MaxY int
 }
 
-func dimensions(world *map[goaocd.Pos]Elve) Dimensions {
+func dimensions(world *map[goaocd.Pos]*Elve) Dimensions {
 	xCoords := []int{}
 	yCoords := []int{}
 	for c := range *world {
@@ -185,11 +229,12 @@ func dimensions(world *map[goaocd.Pos]Elve) Dimensions {
 	return Dimensions{MinX: minX, MaxX: maxX, MinY: minY, MaxY: maxY}
 }
 
-func partA(world *map[goaocd.Pos]Elve) int {
+func partA(world *map[goaocd.Pos]*Elve) int {
 	done := goaocd.Duration("Part A")
 	defer done()
 
-	simulate(world, 10)
+	mR := 10
+	simulate(world, &mR)
 
 	dim := dimensions(world)
 	accu := 0
@@ -206,20 +251,21 @@ func partA(world *map[goaocd.Pos]Elve) int {
 	return accu
 }
 
-func partB() int {
-	done := goaocd.Duration("Part B")
+func partB(world *map[goaocd.Pos]*Elve) int {
+	done := goaocd.Duration("Part A")
 	defer done()
 
-	return 0
+	return simulate(world, nil)
 }
 
-func loadWorld(lines []string) *map[goaocd.Pos]Elve {
-	res := make(map[goaocd.Pos]Elve)
+func loadWorld(lines []string) *map[goaocd.Pos]*Elve {
+	res := make(map[goaocd.Pos]*Elve)
 	for y, line := range lines {
 		for x, s := range line {
 			if string(s) == "#" {
 				p := goaocd.Pos{X: x, Y: y}
-				res[p] = NewElve(p)
+				e := NewElve(p)
+				res[p] = &e
 			}
 		}
 	}
@@ -228,8 +274,11 @@ func loadWorld(lines []string) *map[goaocd.Pos]Elve {
 
 func main() {
 	lines := sample()
-	world := loadWorld(lines)
+	lines = goaocd.Lines()
 
+	world := loadWorld(lines)
 	fmt.Printf("Part A: %d\n", partA(world))
-	fmt.Printf("Part B: %d\n", partB())
+
+	world = loadWorld(lines)
+	fmt.Printf("Part B: %d\n", partB(world))
 }
